@@ -19,44 +19,71 @@ class _MyHomePageState extends State<MyHomePage> {
   Widget build(BuildContext context) {
     return LayoutBuilder(
       builder: (context, constraints) {
-        return Scaffold(
+        if (constraints.maxWidth > 600) {
+          return Scaffold(
+            appBar: AppBar(title: const Text('CrashMap')),
+            // floatingActionButton: FloatingActionButton(onPressed: () {}, child: const Icon(Icons.location_pin)),
+            body: Row(children: [SizedBox(width: 240, child: FilterDrawer()), Container(width: 0.5, color: Colors.black), Expanded(child: CrashMap(mapController: mapController, runtimeType: runtimeType))])
+          );
+        } else {
+          // Mobile layout
+          return Scaffold(
             appBar: AppBar(title: const Text('CrashMap')),
             // floatingActionButton: FloatingActionButton(onPressed: () {}, child: const Icon(Icons.location_pin)),
             drawer: const FilterDrawer(),
-            body: FlutterMap(
-              mapController: mapController,
-              options: MapOptions(
-                  center: const LatLng(-22.107471, 149.50843),
-                  zoom: 6,
-                  maxBounds: LatLngBounds(
-                      const LatLng(-8.247191862079545, 136.4674620687551),
-                      const LatLng(-29.54422005573508, 155.74905412309064)),
-                  interactiveFlags:
-                      InteractiveFlag.all - InteractiveFlag.rotate,
-                  onMapReady: () {
-                    var request =
-                        Provider.of<MainAppState>(context, listen: false)
-                            .request;
-                    request.updateBounds(mapController.bounds);
-                    mapController.mapEventStream.listen((evt) {
-                      if ([
-                        MapEventScrollWheelZoom,
-                        MapEventMoveEnd,
-                        MapEventFlingAnimationEnd,
-                      ].contains(evt.runtimeType)) {
-                        // Update on movement
-                        request.updateBounds(mapController.bounds);
-                      }
-                    });
-                  }),
-              children: [
-                TileLayer(
-                  urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-                  userAgentPackageName: 'xyz.crashmap.app',
-                ),
-              ],
-            ));
+            body: CrashMap(mapController: mapController, runtimeType: runtimeType)
+          );
+        }
+        
       },
+    );
+  }
+}
+
+class CrashMap extends StatelessWidget {
+  const CrashMap({
+    super.key,
+    required this.mapController,
+    required this.runtimeType,
+  });
+
+  final MapController mapController;
+  final Type runtimeType;
+
+  @override
+  Widget build(BuildContext context) {
+    return FlutterMap(
+      mapController: mapController,
+      options: MapOptions(
+          center: const LatLng(-22.107471, 149.50843),
+          zoom: 6,
+          maxBounds: LatLngBounds(
+              const LatLng(-8.247191862079545, 136.4674620687551),
+              const LatLng(-29.54422005573508, 155.74905412309064)),
+          interactiveFlags:
+              InteractiveFlag.all - InteractiveFlag.rotate,
+          onMapReady: () {
+            var request =
+                Provider.of<MainAppState>(context, listen: false)
+                    .request;
+            request.updateBounds(mapController.bounds);
+            mapController.mapEventStream.listen((evt) {
+              if ([
+                MapEventScrollWheelZoom,
+                MapEventMoveEnd,
+                MapEventFlingAnimationEnd,
+              ].contains(evt.runtimeType)) {
+                // Update on movement
+                request.updateBounds(mapController.bounds);
+              }
+            });
+          }),
+      children: [
+        TileLayer(
+          urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+          userAgentPackageName: 'xyz.crashmap.app',
+        ),
+      ],
     );
   }
 }
