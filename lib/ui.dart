@@ -100,9 +100,7 @@ class _FilterDrawerState extends State<FilterDrawer> {
   Widget build(BuildContext context) {
     final state = context.watch<MainAppState>();
 
-    return Drawer(
-      child: SafeArea(
-          child: ListView(
+    return NavigationDrawer(
         children: [
           ExpansionTile(
             title: const Text('Vehicles'),
@@ -172,7 +170,6 @@ class _FilterDrawerState extends State<FilterDrawer> {
             ]),
           ExpansionTile(title: Text('Severity'))
         ],
-      )),
     );
   }
 }
