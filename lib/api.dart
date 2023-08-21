@@ -104,7 +104,7 @@ class ApiRequest {
     'pedestrian',
     'other'
   ];
-  List<int> yearRange = [];
+  List<int> yearRange = [2001, 2020];
   List<CrashSeverity> severity = [];
   // So far unused:
   List<CrashNature> nature = [];
@@ -120,6 +120,10 @@ class ApiRequest {
     } else if (!newState && isVehicleSelected(veh)) {
       vehicleTypes.remove(veh);
     }
+  }
+
+  void updateYearRange(int min, int max) {
+    yearRange = [min, max];
   }
 
   void updateBounds(LatLngBounds? bounds) {

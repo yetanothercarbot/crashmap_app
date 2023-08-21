@@ -40,4 +40,9 @@ class MainAppState extends ChangeNotifier {
     request.selectVehicle(veh, newState);
     notifyListeners();
   }
+
+  void updateDateRange(RangeValues values) {
+    request.updateYearRange(values.start.round(), values.end.round());
+    notifyListeners();
+  }
 }

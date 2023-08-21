@@ -1,3 +1,5 @@
+import 'dart:html';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
@@ -131,7 +133,18 @@ class _FilterDrawerState extends State<FilterDrawer> {
                   }),
             ],
           ),
-          ExpansionTile(title: Text('Year Range')),
+          ExpansionTile(
+            title: const Text('Year Range'), 
+            children: [
+              RangeSlider(
+                min: 2001,
+                max: 2020,
+                divisions: 19,
+                values: RangeValues(state.request.yearRange[0].toDouble(), state.request.yearRange[1].toDouble()), 
+                onChanged: (RangeValues values) {state.updateDateRange(values);}
+              ),
+              Text('${state.request.yearRange[0]}-${state.request.yearRange[1]}')
+            ]),
           ExpansionTile(title: Text('Severity'))
         ],
       )),
