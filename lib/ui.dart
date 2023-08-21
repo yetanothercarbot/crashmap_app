@@ -71,18 +71,64 @@ class FilterDrawer extends StatefulWidget {
 class _FilterDrawerState extends State<FilterDrawer> {
   @override
   Widget build(BuildContext context) {
-    var request = context.watch<MainAppState>().request;
+    final state = context.watch<MainAppState>();
+
     return Drawer(
       child: SafeArea(
           child: ListView(
         children: [
           ExpansionTile(
-            title: Text('Vehicles'),
+            title: const Text('Vehicles'),
             children: [
               CheckboxListTile(
-                  value: request.isVehicleSelected('car'),
+                  value: state.request.isVehicleSelected('car'),
                   title: const Text('Car'),
-                  onChanged: (bool? value) {})
+                  secondary: const Icon(Icons.directions_car),
+                  onChanged: (bool? value) {
+                    state.selectVehicle('car', value);
+                  }),
+              CheckboxListTile(
+                  value: state.request.isVehicleSelected('bicycle'),
+                  title: const Text('Bicycle'),
+                  secondary: const Icon(Icons.directions_bike),
+                  onChanged: (bool? value) {
+                    state.selectVehicle('bicycle', value);
+                  }),
+              CheckboxListTile(
+                  value: state.request.isVehicleSelected('motorcycle'),
+                  title: const Text('Motorcycle'),
+                  secondary: const Icon(Icons.motorcycle),
+                  onChanged: (bool? value) {
+                    state.selectVehicle('motorcycle', value);
+                  }),
+              CheckboxListTile(
+                  value: state.request.isVehicleSelected('truck'),
+                  title: const Text('Truck'),
+                  secondary: const Icon(Icons.local_shipping),
+                  onChanged: (bool? value) {
+                    state.selectVehicle('truck', value);
+                  }),
+              CheckboxListTile(
+                  value: state.request.isVehicleSelected('bus'),
+                  title: const Text('Bus'),
+                  secondary: const Icon(Icons.airport_shuttle),
+                  onChanged: (bool? value) {
+                    state.selectVehicle('bus', value);
+                  }),
+              CheckboxListTile(
+                  value: state.request.isVehicleSelected('pedestrian'),
+                  title: const Text('Pedestrian'),
+                  secondary: const Icon(Icons.directions_walk),
+                  onChanged: (bool? value) {
+                    state.selectVehicle('pedestrian', value);
+                  }),
+              CheckboxListTile(
+                  value: state.request.isVehicleSelected('other'),
+                  title: const Text('Other'),
+                  secondary: const Icon(Icons.forklift),
+                  onChanged: (bool? value) {
+                    state.selectVehicle('other', value);
+                  }),
             ],
           ),
           ExpansionTile(title: Text('Year Range')),

@@ -95,7 +95,15 @@ class ApiResponse {
 class ApiRequest {
   // So far used:
   List<List<double?>> corners = [];
-  List<String> vehicleTypes = [];
+  List<String> vehicleTypes = [
+    'car',
+    'motorcycle',
+    'truck',
+    'bus',
+    'bicycle',
+    'pedestrian',
+    'other'
+  ];
   List<int> yearRange = [];
   List<CrashSeverity> severity = [];
   // So far unused:
@@ -106,7 +114,7 @@ class ApiRequest {
     return vehicleTypes.contains(veh);
   }
 
-  void selectVehicle(String veh, [bool newState = true]) {
+  void selectVehicle(String veh, bool newState) {
     if (newState && !isVehicleSelected(veh)) {
       vehicleTypes.add(veh);
     } else if (!newState && isVehicleSelected(veh)) {

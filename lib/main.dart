@@ -34,4 +34,10 @@ class MainAppState extends ChangeNotifier {
   MainAppState() {
     // response = api.fetch(request);
   }
+
+  void selectVehicle(String veh, [bool? newState]) {
+    newState ??= true;
+    request.selectVehicle(veh, newState);
+    notifyListeners();
+  }
 }
