@@ -21,14 +21,14 @@ class _MyHomePageState extends State<MyHomePage> {
       builder: (context, constraints) {
         if (constraints.maxWidth > 600) {
           return Scaffold(
-            appBar: AppBar(title: const Text('CrashMap')),
+            appBar: AppBar(title: const Text('CrashMap'), bottom: PreferredSize(preferredSize: Size(constraints.maxWidth, 0), child: LinearProgressIndicator(),),),
             // floatingActionButton: FloatingActionButton(onPressed: () {}, child: const Icon(Icons.location_pin)),
             body: Row(children: [SizedBox(width: 240, child: FilterDrawer()), Container(width: 0.5, color: Colors.black), Expanded(child: CrashMap(mapController: mapController, runtimeType: runtimeType))])
           );
         } else {
           // Mobile layout
           return Scaffold(
-            appBar: AppBar(title: const Text('CrashMap')),
+            appBar: AppBar(title: const Text('CrashMap'), bottom: PreferredSize(preferredSize: Size(constraints.maxWidth, 0), child: LinearProgressIndicator(),),),
             // floatingActionButton: FloatingActionButton(onPressed: () {}, child: const Icon(Icons.location_pin)),
             drawer: const FilterDrawer(),
             body: CrashMap(mapController: mapController, runtimeType: runtimeType)
