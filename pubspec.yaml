@@ -10,9 +10,10 @@ dependencies:
   flutter:
     sdk: flutter
   flutter_map: ^5.0.0
+  latlong2: any
+  flutter_map_supercluster: any 
   http: ^1.1.0
-  latlong2: ^0.9.0
-  provider: ^5.0.0
+  provider: any
 
 dev_dependencies:
   flutter_test:

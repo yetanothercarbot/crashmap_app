@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
@@ -70,6 +71,7 @@ class Crash {
   late LatLng location;
   late int severityIndex;
   late bool detailed;
+  late Marker marker;
   CrashNature? nature;
 
   Crash(Map<String, dynamic> description) {
@@ -77,6 +79,13 @@ class Crash {
     location = LatLng(description['location'][1], description['location'][0]) ;
     severityIndex = description['severityindex'];
     detailed = description.containsKey('type');
+
+    marker = Marker(
+      point: location, 
+      builder: (context) => const Icon(Icons.location_pin, size: 20, color: Color.fromARGB(255, 114, 91, 9),), 
+      width: 20, 
+      height: 20
+    );
 
     if (detailed) {
       // Assume it contains the other keys, add them.
@@ -92,6 +101,10 @@ class ApiResponse {
     for (var crash in crashesRaw) {
       crashes.add(Crash(crash));
     }
+  }
+
+  List<Marker> markers() {
+    return <Marker>[for (var crash in crashes) crash.marker];
   }
 }
 

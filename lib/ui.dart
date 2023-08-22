@@ -1,6 +1,7 @@
 import 'package:crashmap_app/api.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
+import 'package:flutter_map_supercluster/flutter_map_supercluster.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:provider/provider.dart';
 import 'main.dart';
@@ -31,17 +32,16 @@ class _MyHomePageState extends State<MyHomePage> {
                     preferredSize: Size(constraints.maxWidth, 0), 
                     child:  const LinearProgressIndicator(),
                   ),),
-                body: Row(children: [const SizedBox(width: 240, child: FilterDrawer()), Container(width: 0.5, color: Colors.black), Expanded(child: CrashMap(mapController: mapController, screenSize: Size(constraints.maxWidth, constraints.maxHeight)))])
+                body: Row(children: [const SizedBox(width: 240, child: FilterDrawer()), Container(width: 0.5, color: Colors.black), Expanded(child: CrashMap(mapController: mapController, screenSize: Size(constraints.maxWidth, constraints.maxHeight),))])
               );
             } else {
               // Mobile layout
               return Scaffold(
                 appBar: AppBar(title: const Text('CrashMap'), bottom: (snapshot.hasData) ? null : PreferredSize(preferredSize: Size(constraints.maxWidth, 0), child: const LinearProgressIndicator(),),),
                 drawer: const FilterDrawer(),
-                body: CrashMap(mapController: mapController, screenSize: Size(constraints.maxWidth, constraints.maxHeight),)
+                body: CrashMap(mapController: mapController, screenSize: Size(constraints.maxWidth, constraints.maxHeight))
               );
             }
-            
           },
         );
       }
@@ -53,7 +53,7 @@ class CrashMap extends StatelessWidget {
   const CrashMap({
     super.key,
     required this.mapController,
-    required this.screenSize
+    required this.screenSize,
   });
 
   final MapController mapController;
@@ -61,6 +61,7 @@ class CrashMap extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    var response = context.watch<MainAppState>().response;
     return FlutterMap(
       mapController: mapController,
       options: MapOptions(
@@ -82,14 +83,9 @@ class CrashMap extends StatelessWidget {
                 MapEventMoveEnd,
                 MapEventFlingAnimationEnd,
               ].contains(evt.runtimeType)) {
-                print(mapController.zoom);
                 // Update on movement
                 state.request.updateBounds(mapController.bounds);
-                if(mapController.zoom > 9) {
-                  // Set to marker view
-                } else {
-                  // Set to heatmap view
-                }
+                state.heatmapEn = mapController.zoom < 15;
                 state.getData();
               }
             });
@@ -100,10 +96,19 @@ class CrashMap extends StatelessWidget {
           userAgentPackageName: 'xyz.crashmap.app',
           maxNativeZoom: 18,
         ),
+        FutureBuilder(
+          future: response,
+          builder: (context, snapshot) {
+            return MarkerLayer(
+              markers: snapshot.hasData ? snapshot.data!.markers() : [],
+            );
+          }
+        )
       ],
     );
   }
 }
+
 
 class FilterDrawer extends StatefulWidget {
   const FilterDrawer({super.key});
