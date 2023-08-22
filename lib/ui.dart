@@ -18,6 +18,7 @@ class _MyHomePageState extends State<MyHomePage> {
   @override
   Widget build(BuildContext context) {
     var response = context.watch<MainAppState>().response;
+    var loadingStatus = context.watch<MainAppState>().loading;
     return FutureBuilder<ApiResponse>(
       future: response,
       builder: (futureContext, snapshot) {
@@ -27,16 +28,16 @@ class _MyHomePageState extends State<MyHomePage> {
               return Scaffold(
                 appBar: AppBar(
                   title: const Text('CrashMap'), 
-                  bottom: (snapshot.hasData) ? null : PreferredSize(
+                  bottom: loadingStatus ? PreferredSize(
                     preferredSize: Size(constraints.maxWidth, 0), 
                     child:  const LinearProgressIndicator(),
-                  ),),
+                  ) : null,),
                 body: Row(children: [const SizedBox(width: 240, child: FilterDrawer()), Container(width: 0.5, color: Colors.black), Expanded(child: CrashMap(mapController: mapController, screenSize: Size(constraints.maxWidth, constraints.maxHeight),))])
               );
             } else {
               // Mobile layout
               return Scaffold(
-                appBar: AppBar(title: const Text('CrashMap'), bottom: (snapshot.hasData) ? null : PreferredSize(preferredSize: Size(constraints.maxWidth, 0), child: const LinearProgressIndicator(),),),
+                appBar: AppBar(title: const Text('CrashMap'), bottom: loadingStatus ? PreferredSize(preferredSize: Size(constraints.maxWidth, 0), child: const LinearProgressIndicator(),) : null,),
                 drawer: const FilterDrawer(),
                 body: CrashMap(mapController: mapController, screenSize: Size(constraints.maxWidth, constraints.maxHeight))
               );

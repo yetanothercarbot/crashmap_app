@@ -31,16 +31,17 @@ class MainAppState extends ChangeNotifier {
   CrashMapApi api = CrashMapApi('https://api.crashmap.xyz');
   ApiRequest request = ApiRequest();
 
-  bool heatmapEn = true;
+  bool heatmapEn = true, loading = true;
 
   MainAppState() {
     getData();
   }
 
   void getData() {
+    loading = true;
     response = api.fetch(request);
     notifyListeners();
-    response.then((value) {notifyListeners();});
+    response.then((value) {loading = false; notifyListeners();});
   }
 
   void selectVehicle(String veh, [bool? newState]) {

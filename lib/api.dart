@@ -110,7 +110,7 @@ class ApiResponse {
 
 class ApiRequest {
   // So far used:
-  List<List<double?>> corners = [[-8.247191862079545, 136.4674620687551], [-29.54422005573508, 155.74905412309064]];
+  List<List<double?>> corners = [[136.4674620687551, -29.54422005573508,], [155.74905412309064, -8.247191862079545,]];
   List<String> vehicleTypes = [
     'car',
     'motorcycle',
