@@ -32,7 +32,11 @@ class MainAppState extends ChangeNotifier {
   ApiRequest request = ApiRequest();
 
   MainAppState() {
-    // response = api.fetch(request);
+    getData();
+  }
+
+  void getData() {
+    response = api.fetch(request);
   }
 
   void selectVehicle(String veh, [bool? newState]) {
@@ -43,6 +47,12 @@ class MainAppState extends ChangeNotifier {
 
   void updateDateRange(RangeValues values) {
     request.updateYearRange(values.start.round(), values.end.round());
+    notifyListeners();
+  }
+
+  void selectSeverity(CrashSeverity sev, [bool? newState]) {
+    newState ??= true;
+    request.selectSeverity(sev, newState);
     notifyListeners();
   }
 }

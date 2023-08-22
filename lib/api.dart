@@ -2,6 +2,8 @@ import 'package:flutter_map/flutter_map.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 
+import 'package:latlong2/latlong.dart';
+
 enum CrashConditions {
   clear(1, 'Clear'),
   raining(2, 'Raining'),
@@ -64,14 +66,15 @@ enum CrashSeverity {
 
 class Crash {
   late int id;
-  late List<int> location;
+  // late List<int> location;
+  late LatLng location;
   late int severityIndex;
   late bool detailed;
   CrashNature? nature;
 
   Crash(Map<String, dynamic> description) {
     id = description['id'];
-    location = description['location'];
+    location = LatLng(description['location'][1], description['location'][0]) ;
     severityIndex = description['severityindex'];
     detailed = description.containsKey('type');
 
@@ -82,7 +85,7 @@ class Crash {
 }
 
 class ApiResponse {
-  Set<Crash> crashes = {};
+  List<Crash> crashes = [];
 
   ApiResponse(String responseBody) {
     List<dynamic> crashesRaw = jsonDecode(responseBody);
@@ -94,7 +97,7 @@ class ApiResponse {
 
 class ApiRequest {
   // So far used:
-  List<List<double?>> corners = [];
+  List<List<double?>> corners = [[-8.247191862079545, 136.4674620687551], [-29.54422005573508, 155.74905412309064]];
   List<String> vehicleTypes = [
     'car',
     'motorcycle',
@@ -105,13 +108,24 @@ class ApiRequest {
     'other'
   ];
   List<int> yearRange = [2001, 2020];
-  List<CrashSeverity> severity = [];
+  List<CrashSeverity> severities = [
+    CrashSeverity.fatal, 
+    CrashSeverity.hospitalisation, 
+    CrashSeverity.medicalTreatment,
+    CrashSeverity.minorInjury, 
+    CrashSeverity.propertyDmg
+  ];
   // So far unused:
   List<CrashNature> nature = [];
   List<CrashType> type = [];
   List<CrashConditions> conditions = [];
+
   bool isVehicleSelected(String veh) {
     return vehicleTypes.contains(veh);
+  }
+
+  bool isSeveritySelected(CrashSeverity severity) {
+    return severities.contains(severity);
   }
 
   void selectVehicle(String veh, bool newState) {
@@ -122,14 +136,22 @@ class ApiRequest {
     }
   }
 
+  void selectSeverity(CrashSeverity severity, bool newState) {
+    if (newState && !isSeveritySelected(severity)) {
+      severities.add(severity);
+    } else if (!newState && isSeveritySelected(severity)) {
+      severities.remove(severity);
+    }
+  }
+
   void updateYearRange(int min, int max) {
     yearRange = [min, max];
   }
 
   void updateBounds(LatLngBounds? bounds) {
     corners = [
-      [bounds?.northWest.latitude, bounds?.northWest.longitude],
-      [bounds?.southEast.latitude, bounds?.southEast.longitude]
+      [bounds?.southWest.longitude, bounds?.southWest.latitude,],
+      [bounds?.northEast.longitude, bounds?.northEast.latitude,],
     ];
   }
 
@@ -139,7 +161,7 @@ class ApiRequest {
         'vehicle_types': vehicleTypes,
         'yearmax': yearRange[1],
         'yearmin': yearRange[0],
-        'severity': severity.map((x) => x.number).toList()
+        'severity': severities.map((x) => x.number).toList()
       };
 }
 

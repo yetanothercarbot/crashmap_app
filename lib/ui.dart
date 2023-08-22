@@ -1,3 +1,4 @@
+import 'package:crashmap_app/api.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
@@ -13,29 +14,37 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   final mapController = MapController();
-  bool showHeatmap = false, showMarkers = false;
 
   @override
   Widget build(BuildContext context) {
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        if (constraints.maxWidth > 600) {
-          return Scaffold(
-            appBar: AppBar(title: const Text('CrashMap'), bottom: PreferredSize(preferredSize: Size(constraints.maxWidth, 0), child: LinearProgressIndicator(),),),
-            // floatingActionButton: FloatingActionButton(onPressed: () {}, child: const Icon(Icons.location_pin)),
-            body: Row(children: [SizedBox(width: 240, child: FilterDrawer()), Container(width: 0.5, color: Colors.black), Expanded(child: CrashMap(mapController: mapController, runtimeType: runtimeType))])
-          );
-        } else {
-          // Mobile layout
-          return Scaffold(
-            appBar: AppBar(title: const Text('CrashMap'), bottom: PreferredSize(preferredSize: Size(constraints.maxWidth, 0), child: LinearProgressIndicator(),),),
-            // floatingActionButton: FloatingActionButton(onPressed: () {}, child: const Icon(Icons.location_pin)),
-            drawer: const FilterDrawer(),
-            body: CrashMap(mapController: mapController, runtimeType: runtimeType)
-          );
-        }
-        
-      },
+    var response = context.watch<MainAppState>().response;
+    return FutureBuilder<ApiResponse>(
+      future: response,
+      builder: (futureContext, snapshot) {
+        return LayoutBuilder(
+          builder: (layoutContext, constraints) {
+            if (constraints.maxWidth > 600) {
+              return Scaffold(
+                appBar: AppBar(
+                  title: const Text('CrashMap'), 
+                  bottom: (snapshot.hasData) ? null : PreferredSize(
+                    preferredSize: Size(constraints.maxWidth, 0), 
+                    child:  const LinearProgressIndicator(),
+                  ),),
+                body: Row(children: [const SizedBox(width: 240, child: FilterDrawer()), Container(width: 0.5, color: Colors.black), Expanded(child: CrashMap(mapController: mapController, screenSize: Size(constraints.maxWidth, constraints.maxHeight)))])
+              );
+            } else {
+              // Mobile layout
+              return Scaffold(
+                appBar: AppBar(title: const Text('CrashMap'), bottom: (snapshot.hasData) ? null : PreferredSize(preferredSize: Size(constraints.maxWidth, 0), child: const LinearProgressIndicator(),),),
+                drawer: const FilterDrawer(),
+                body: CrashMap(mapController: mapController, screenSize: Size(constraints.maxWidth, constraints.maxHeight),)
+              );
+            }
+            
+          },
+        );
+      }
     );
   }
 }
@@ -44,37 +53,44 @@ class CrashMap extends StatelessWidget {
   const CrashMap({
     super.key,
     required this.mapController,
-    required this.runtimeType,
+    required this.screenSize
   });
 
   final MapController mapController;
-  final Type runtimeType;
+  final Size screenSize;
 
   @override
   Widget build(BuildContext context) {
     return FlutterMap(
       mapController: mapController,
       options: MapOptions(
+          screenSize: screenSize,
           center: const LatLng(-22.107471, 149.50843),
           zoom: 6,
+          maxZoom: 18,
           maxBounds: LatLngBounds(
-              const LatLng(-8.247191862079545, 136.4674620687551),
-              const LatLng(-29.54422005573508, 155.74905412309064)),
+              const LatLng(-6.697788086491729, 135.62482150691713),
+              const LatLng(-31.324481038082332, 162.0974699871303)),
           interactiveFlags:
               InteractiveFlag.all - InteractiveFlag.rotate,
           onMapReady: () {
-            var request =
-                Provider.of<MainAppState>(context, listen: false)
-                    .request;
-            request.updateBounds(mapController.bounds);
+            var state = Provider.of<MainAppState>(context, listen: false);
+            state.request.updateBounds(mapController.bounds);
             mapController.mapEventStream.listen((evt) {
               if ([
                 MapEventScrollWheelZoom,
                 MapEventMoveEnd,
                 MapEventFlingAnimationEnd,
               ].contains(evt.runtimeType)) {
+                print(mapController.zoom);
                 // Update on movement
-                request.updateBounds(mapController.bounds);
+                state.request.updateBounds(mapController.bounds);
+                if(mapController.zoom > 9) {
+                  // Set to marker view
+                } else {
+                  // Set to heatmap view
+                }
+                state.getData();
               }
             });
           }),
@@ -82,6 +98,7 @@ class CrashMap extends StatelessWidget {
         TileLayer(
           urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
           userAgentPackageName: 'xyz.crashmap.app',
+          maxNativeZoom: 18,
         ),
       ],
     );
@@ -102,6 +119,12 @@ class _FilterDrawerState extends State<FilterDrawer> {
 
     return NavigationDrawer(
         children: [
+          const DrawerHeader(
+            decoration: BoxDecoration(
+              color: Colors.white,
+            ),
+            child: Text('CrashMap'),
+          ),
           ExpansionTile(
             title: const Text('Vehicles'),
             children: [
@@ -168,7 +191,51 @@ class _FilterDrawerState extends State<FilterDrawer> {
               ),
               Text('${state.request.yearRange[0]}-${state.request.yearRange[1]}')
             ]),
-          ExpansionTile(title: Text('Severity'))
+          ExpansionTile(
+            title: const Text('Severity'), 
+            children: [
+              CheckboxListTile(
+                  value: state.request.isSeveritySelected(CrashSeverity.fatal),
+                  title: const Text('Fatal'),
+                  // secondary: const Icon(Icons.),
+                  onChanged: (bool? value) {
+                    state.selectSeverity(CrashSeverity.fatal, value);
+                  }
+                ),
+                CheckboxListTile(
+                  value: state.request.isSeveritySelected(CrashSeverity.hospitalisation),
+                  title: const Text('Hospitalisation'),
+                  // secondary: const Icon(Icons.),
+                  onChanged: (bool? value) {
+                    state.selectSeverity(CrashSeverity.hospitalisation, value);
+                  }
+                ),
+                CheckboxListTile(
+                  value: state.request.isSeveritySelected(CrashSeverity.medicalTreatment),
+                  title: const Text('Medical treatment'),
+                  // secondary: const Icon(Icons.),
+                  onChanged: (bool? value) {
+                    state.selectSeverity(CrashSeverity.medicalTreatment, value);
+                  }
+                ),
+                CheckboxListTile(
+                  value: state.request.isSeveritySelected(CrashSeverity.minorInjury),
+                  title: const Text('Minor injury'),
+                  // secondary: const Icon(Icons.),
+                  onChanged: (bool? value) {
+                    state.selectSeverity(CrashSeverity.minorInjury, value);
+                  }
+                ),
+                CheckboxListTile(
+                  value: state.request.isSeveritySelected(CrashSeverity.propertyDmg),
+                  title: const Text('Property damage only'),
+                  // secondary: const Icon(Icons.),
+                  onChanged: (bool? value) {
+                    state.selectSeverity(CrashSeverity.propertyDmg, value);
+                  }
+                ),
+            ],
+          ),
         ],
     );
   }
