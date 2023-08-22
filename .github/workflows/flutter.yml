@@ -26,7 +26,7 @@ jobs:
           flutter-version: '3.13.0'
       - run: flutter pub get
       - run: flutter build apk
-      - run: flutter build web
+      - run: flutter build web --web-renderer canvaskit
       - uses: actions/upload-artifact@v3
         with:
           name: android
